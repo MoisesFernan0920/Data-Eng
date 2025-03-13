@@ -5,10 +5,10 @@ df = pd.read_csv("data_set.csv")
 
 # Basic Pandas Operations 
 
-# print(df.info)
-# print(df.tail())
-# print(df.head())
-# print(df.describe())
+print(df.info)
+print(df.tail())
+print(df.head())
+print(df.describe())
 
 
 
@@ -37,11 +37,11 @@ cities_india = df[df["Country"] == "India"]["Population (2024)"].sum()
 # Scenario 5 
 # Find cities experiencing a population decline and calculate their growth median 
 population_decline_median = df[df["Growth Rate"] < 0]["Growth Rate"].median()
-print("Decline Median Cities: ", population_decline_median)
+# print("Decline Median Cities: ", population_decline_median)
 
 
 # Scenario 6 
 # Find the growing cities in China and calculate the minimum population they had in 2023 
 min_pop_china_2023 = df[(df["Country"] == "China") & (df["Growth Rate"] > 0)]["Population (2023)"].min()
-print("Min pop in China for 2023", min_pop_china_2023)
+# print("Min pop in China for 2023", min_pop_china_2023)
 
