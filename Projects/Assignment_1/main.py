@@ -1,91 +1,88 @@
-# Moises Fernandes 
-# Python Script Writing Drills (Utilizing argparse, logging and if main idiom)
-# Making it "Natural"
-    # Take in inputs like " +, -, *, /"
-    # Float -> allow user to select significant figures (some answer will be decimals)
-# Explore Logging 
-
 import argparse 
 import logging 
 
-logging.basicConfig(filename = "calculator.log"
-                    format = '%(asctime)s %(message)s',
-                    filemode = 'a')
+# Configure logging
+logging.basicConfig(
+    filename="calculator.log",
+    format='%(asctime)s %(message)s',
+    filemode='a'
+)
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
+# Parse command-line arguments
 def parse_args():
-    parser = argparse.ArgumentParser(description= "Calculator")
+    parser = argparse.ArgumentParser(description="Calculator")
+    
     # Argument for operations 
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument("-a","--addition", help = "Performs addition", action = "store_true")
-    group.add_argument("-s","--subtraction", help = "Performs subtraction", action = "store_true")
-    group.add_argument("-m","--multiplication", help = "Performs multiplication", action = "store_true")
-    group.add_argument('-d',"--divison", help = "Performs Division", action = "store_true")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("-a", "--addition", help="Performs addition", action="store_true")
+    group.add_argument("-s", "--subtraction", help="Performs subtraction", action="store_true")
+    group.add_argument("-m", "--multiplication", help="Performs multiplication", action="store_true")
+    group.add_argument("-d", "--division", help="Performs Division", action="store_true")
+
     # Argument for significant figures 
-    parser.add_argument("-f","--significat-figure", type = int, default = 2, help = "How many significant figures")
+    parser.add_argument("-f", "--significant-figures", type=int, default=2, help="How many significant figures (default: 2)")
+    
     # Argument for values 
-    parser.add_argument("num_1", type = float, help = "Give a positive integer (value 1)")
-    parser.add_argument("num_2", type = float, help = "Give a positive integer (value 2)")
+    parser.add_argument("num_1", type=float, help="Give a positive integer (value 1)")
+    parser.add_argument("num_2", type=float, help="Give a positive integer (value 2)")
 
     args = parser.parse_args()
     return args 
 
-def main(args):
-    sig_figs = args.significant_figures
-    if args.addition:
-        result = addition(args.num_1,args.num_2,sig_figs)
-        print("The addition results of {} and {} is {} ".format(args.num_1,args.num_2,result))
-    elif args.subtraction: 
-        result = subtraction(args.num_1, args.num_2, sig_figs)
-        print("The subtraction results of {} and {} is {} ".format(args.num_1,args.num_2,result))
-    elif args.multiplication:
-        result = multiplication(args.num_1,args.num_2)
-        print("The multiplication results of {} and {} is {} ".format(args.num_1,args.num_2,result))
-    elif args.division:
-        result = division(args.num_1, args.num_2) 
-        print("The division results of {} and {} is {} ".format(args.num_1,args.num_2,result))
-    else: 
-        print( "Please use a specificed operation")
+# Format Function 
+def format_result(value, sig_figs): 
+    return float(f"{value:.{sig_figs}g}")
 
 # Addition Function 
-def addition (num_1,num_2, sig_figs = 2):
-    sum = num_1 + num_2 
+def addition(num_1, num_2, sig_figs=2):
+    result = num_1 + num_2 
     # Log 
-    logger.debug(f"num_1 : {num_1}")
-    logger.debug(f"num_2 : {num_2}")
-    logger.debug(f"sum :{sum}")
-    return float(f"{sum:{sig_figs}g}")
+    logger.debug(f"Addition: {num_1} + {num_2} = {result}")
+    return format_result(result, sig_figs)
 
 # Subtraction Function 
-def subtraction (num_1, num_2, sig_figs = 2):
-    diff = num_1 - num_2 
+def subtraction(num_1, num_2, sig_figs=2):
+    result = num_1 - num_2 
     # Log 
-    logger.debug(f"num_1 : {num_1}")
-    logger.debug(f"num_2: {num_2}")
-    logger.debug(f"diff :{diff}")
-    return float(f"{diff:{sig_figs}g}")
+    logger.debug(f"Subtraction: {num_1} - {num_2} = {result}")
+    return format_result(result, sig_figs)
 
-def multiplication (num_1, num_2, sig_figs = 2): 
-    product = num_1 * num_2
+# Multiplication Function 
+def multiplication(num_1, num_2, sig_figs=2): 
+    result = num_1 * num_2
     # Log 
-    logger.debug(f"num_1 : {num_1}")
-    logger.debug(f"num_2: {num_2}")
-    logger.debug(f"product :{product}")
-    return float(f"{product:{sig_figs}g}")
- 
-def division(num_1, num_2, sig_figs = 2): 
-    quotient = num_1 * num_2
-    # Log 
-    logger.debug(f"num_1 : {num_1}")
-    logger.debug(f"num_2: {num_2}")
-    logger.debug(f"product :{quotient}")
-    return float(f"{quotient:{sig_figs}g}")
+    logger.debug(f"Multiplication: {num_1} * {num_2} = {result}")
+    return format_result(result, sig_figs)
+
+# Division Function 
+def division(num_1, num_2, sig_figs=2):
+    if num_2 == 0:
+        logger.error("Division by zero error")
+        return "Error: Division by zero"
+    result = num_1 / num_2
+    logger.debug(f"Division: {num_1} / {num_2} = {result}")
+    return format_result(result, sig_figs)
 
 # Operation 
-if __name__ == "__main__":
+def main():
     args = parse_args()
-    main(args)
+    sig_figs = max(1, min(args.significant_figures, 10))  # Limit to a reasonable range
 
+    operations = {
+        "addition": addition, 
+        "subtraction": subtraction, 
+        "multiplication": multiplication, 
+        "division": division,
+    }
 
+    for operation, func in operations.items(): 
+        if getattr(args, operation):
+            result = func(args.num_1, args.num_2, sig_figs)
+            print(f"Result: {result}")
+            break 
+
+if __name__ == "__main__":
+    main()
